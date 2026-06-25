@@ -4,6 +4,8 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 
+const authRoutes = require('./routes/authRoutes');
+
 // Connect to Database
 connectDB();
 
@@ -12,6 +14,9 @@ const app = express();
 // Middlewares
 app.use(cors());
 app.use(express.json());
+
+// Routes
+app.use('/api/auth', authRoutes);
 
 // Basic test route
 app.get('/api/health', (req, res) => {
