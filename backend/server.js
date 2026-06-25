@@ -1,3 +1,7 @@
+const dns = require('dns');
+if (typeof dns.setServers === 'function') {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+}
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -5,6 +9,7 @@ const connectDB = require('./config/db');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 
 const authRoutes = require('./routes/authRoutes');
+const applicationRoutes = require('./routes/applicationRoutes');
 
 // Connect to Database
 connectDB();
@@ -17,6 +22,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/applications', applicationRoutes);
 
 // Basic test route
 app.get('/api/health', (req, res) => {

@@ -1,23 +1,91 @@
-// API service stubs — designed to be swapped for axios calls to FastAPI/MongoDB later.
-// Each function returns a Promise so call sites already look like real network calls.
 import type { LoanApplication, AppStatus, AuthUser } from "./store";
 
-const delay = <T,>(d: T, ms = 350) => new Promise<T>((r) => setTimeout(() => r(d), ms));
+const API_BASE = "http://localhost:5000/api";
+
+const getHeaders = () => {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  const token = typeof window !== "undefined" ? localStorage.getItem("fintech.token") : null;
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  return headers;
+};
 
 export const authApi = {
-  login: (email: string, _password: string, name?: string): Promise<AuthUser> =>
-    delay({ name: name || email.split("@")[0], email }),
-  register: (name: string, email: string, _password: string): Promise<AuthUser> =>
-    delay({ name, email }),
+  login: async (email: string, password?: string, name?: string): Promise<AuthUser> => {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, name }),
+    });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || "Login failed");
+    }
+    return res.json();
+  },
+  register: async (name: string, email: string, password?: string): Promise<AuthUser> => {
+    const res = await fetch(`${API_BASE}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
+    });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || "Registration failed");
+    }
+    return res.json();
+  },
 };
 
 export const applicationsApi = {
-  list: (apps: LoanApplication[]) => delay(apps),
-  create: (app: LoanApplication) => delay(app),
-  updateStatus: (id: string, status: AppStatus) => delay({ id, status }),
+  list: async (): Promise<LoanApplication[]> => {
+    const res = await fetch(`${API_BASE}/applications`, {
+      method: "GET",
+      headers: getHeaders(),
+    });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || "Failed to fetch applications");
+    }
+    const data = await res.json();
+    return data.map((app: any) => ({
+      ...app,
+      id: app.id || app._id,
+    }));
+  },
+  create: async (app: Omit<LoanApplication, "id" | "createdAt" | "riskScore" | "riskLevel" | "status" | "applicantName" | "email">): Promise<LoanApplication> => {
+    const res = await fetch(`${API_BASE}/applications`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(app),
+    });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || "Failed to create application");
+    }
+    const data = await res.json();
+    return {
+      ...data,
+      id: data.id || data._id,
+    };
+  },
+  updateStatus: async (id: string, status: AppStatus): Promise<{ id: string; status: AppStatus }> => {
+    const res = await fetch(`${API_BASE}/applications/${id}/status`, {
+      method: "PATCH",
+      headers: getHeaders(),
+      body: JSON.stringify({ status }),
+    });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || "Failed to update status");
+    }
+    const data = await res.json();
+    return {
+      id: data.id || data._id || id,
+      status: data.status,
+    };
+  },
 };
-
-// Example axios swap (commented for reference):
-// import axios from "axios";
-// export const http = axios.create({ baseURL: import.meta.env.VITE_API_URL });
-// export const authApi = { login: (email, password) => http.post("/auth/login", { email, password }).then(r => r.data) };

@@ -44,10 +44,15 @@ function CustomerDashboard() {
   function next() { setStep((s) => Math.min(4, s + 1)); }
   function prev() { setStep((s) => Math.max(1, s - 1)); }
 
-  function submit() {
-    const created = addApplication(form);
-    setSubmitted(created.id);
-    setStep(1);
+  async function submit() {
+    try {
+      const created = await addApplication(form);
+      setSubmitted(created.id);
+      setStep(1);
+    } catch (err) {
+      console.error(err);
+      alert(err instanceof Error ? err.message : "Failed to submit application");
+    }
   }
 
   return (
