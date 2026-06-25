@@ -2,11 +2,11 @@ const LoanApplication = require('../models/LoanApplication');
 const { evaluateRisk } = require('../utils/riskEngine');
 
 /**
- * @desc    Create a new loan application
- * @route   POST /api/applications
+ * @desc    Apply for a new loan
+ * @route   POST /api/loans/apply
  * @access  Private (Customer)
  */
-const createApplication = async (req, res, next) => {
+const applyForLoan = async (req, res, next) => {
   try {
     const { monthlyIncome, employmentType, creditScore, loanAmount, tenureMonths, existingDebt } = req.body;
 
@@ -15,7 +15,7 @@ const createApplication = async (req, res, next) => {
       throw new Error('Please enter all required financial parameters');
     }
 
-    // Compute risk and fetch LLM feedback asynchronously
+    // Compute risk and fetch LLM feedback asynchronously using Gemini
     const riskResult = await evaluateRisk({
       monthlyIncome: Number(monthlyIncome),
       loanAmount: Number(loanAmount),
@@ -50,11 +50,11 @@ const createApplication = async (req, res, next) => {
 };
 
 /**
- * @desc    Get loan applications
- * @route   GET /api/applications
+ * @desc    Get loan application history
+ * @route   GET /api/loans/history
  * @access  Private
  */
-const getApplications = async (req, res, next) => {
+const getLoanHistory = async (req, res, next) => {
   try {
     let applications;
 
@@ -73,10 +73,10 @@ const getApplications = async (req, res, next) => {
 
 /**
  * @desc    Update loan application status
- * @route   PATCH /api/applications/:id/status
+ * @route   PATCH /api/loans/:id/status
  * @access  Private (Admin Only)
  */
-const updateApplicationStatus = async (req, res, next) => {
+const updateLoanStatus = async (req, res, next) => {
   try {
     // Role check
     if (req.user.role !== 'admin') {
@@ -106,7 +106,7 @@ const updateApplicationStatus = async (req, res, next) => {
 };
 
 module.exports = {
-  createApplication,
-  getApplications,
-  updateApplicationStatus,
+  applyForLoan,
+  getLoanHistory,
+  updateLoanStatus,
 };

@@ -42,7 +42,7 @@ export const authApi = {
 
 export const applicationsApi = {
   list: async (): Promise<LoanApplication[]> => {
-    const res = await fetch(`${API_BASE}/applications`, {
+    const res = await fetch(`${API_BASE}/loans/history`, {
       method: "GET",
       headers: getHeaders(),
     });
@@ -57,7 +57,7 @@ export const applicationsApi = {
     }));
   },
   create: async (app: Omit<LoanApplication, "id" | "createdAt" | "riskScore" | "riskLevel" | "status" | "applicantName" | "email">): Promise<LoanApplication> => {
-    const res = await fetch(`${API_BASE}/applications`, {
+    const res = await fetch(`${API_BASE}/loans/apply`, {
       method: "POST",
       headers: getHeaders(),
       body: JSON.stringify(app),
@@ -73,7 +73,7 @@ export const applicationsApi = {
     };
   },
   updateStatus: async (id: string, status: AppStatus): Promise<{ id: string; status: AppStatus }> => {
-    const res = await fetch(`${API_BASE}/applications/${id}/status`, {
+    const res = await fetch(`${API_BASE}/loans/${id}/status`, {
       method: "PATCH",
       headers: getHeaders(),
       body: JSON.stringify({ status }),

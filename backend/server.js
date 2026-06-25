@@ -9,7 +9,7 @@ const connectDB = require('./config/db');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 
 const authRoutes = require('./routes/authRoutes');
-const applicationRoutes = require('./routes/applicationRoutes');
+const loanRoutes = require('./routes/loanRoutes');
 
 // Connect to Database
 connectDB();
@@ -22,7 +22,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/applications', applicationRoutes);
+app.use('/api/loans', loanRoutes);
 
 // Basic test route
 app.get('/api/health', (req, res) => {
